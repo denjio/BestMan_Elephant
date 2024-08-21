@@ -59,7 +59,7 @@ class Bestman_Real_Elephant:
         self.client.run(10)
 
     def sim_debug_set_arm_to_joint_values(self):
-        )
+        pass
 
     def sim_move_arm_to_joint_values(self, joint_values, threshold=0.015, timeout=0.05):
         self.client.run(40)
@@ -91,3 +91,6 @@ class Bestman_Real_Elephant:
 
     def sim_sync_base_arm_pose(self):
             )
+
+if __name__=='__main__':
+    pass
