@@ -1,0 +1,5 @@
+{
+    "fileheader.Author": "Youbin Yao",
+    "fileheader.LastModifiedBy": "Youbin Yao",
+    "fileheader.tpl": "\"\"\" \\n # @Author: {author} \\n# @Date: {createTime}\\n# @Last Modified by:   {lastModifiedBy} \\n # @Last Modified time: {updateTime}  \\n\"\"\" "
+}
