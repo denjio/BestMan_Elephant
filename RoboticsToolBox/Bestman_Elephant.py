@@ -168,6 +168,7 @@ class Bestman_Real_Elephant:
 if __name__=='__main__':
     bestman = Bestman_Real_Elephant(robot_ip='192.168.113.130')
     # bestman.state_on()
+    bestman.state_on()
     bestman.get_current_cartesian()
     bestman.get_current_joint_values()
     bestman.check_running()
