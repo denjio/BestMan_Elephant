@@ -14,17 +14,15 @@ class Bestman_Real_Elephant:
     def __init__(self, robot_ip, frequency=1):
         # Initialize the robot and gripper with the provided IPs and frequency
         self.robot = ElephantRobot(robot_ip, 5001)
+        # Necessary instructions to start the robot
+        self.robot.start_client()
         self.gripper = None
         self.frequency = frequency
          
     # ----------------------------------------------------------------
     # functions for switch
     # ----------------------------------------------------------------
-
-     
     def state_on(self,):
-        # Necessary instructions to start the robot
-        self.robot.start_client()
         # Turn off robot enable first
         self.robot.state_off()
         time.sleep(3)
@@ -36,28 +34,22 @@ class Bestman_Real_Elephant:
         time.sleep(3)
 
     def state_off(self,):
-        self.robot.start_client()
         self.robot.state_off()
         time.sleep(3)
 
     def power_on(self,):
-        self.robot.start_client()
         self.robot.power_on()
         time.sleep(3)
        
     def power_off(self,):
-        self.robot.start_client()
+        self.robot.state_off()
         self.robot.power_off()
         time.sleep(3)
-    # ----------------------------------------------------------------
-    # functions for check infomation
-    # ----------------------------------------------------------------
-
-         
+    
+    
     # ----------------------------------------------------------------
     # functions for arm
     # ----------------------------------------------------------------
-
     # def sim_get_arm_id(self):
     #     return self.arm_id
 
@@ -81,31 +73,40 @@ class Bestman_Real_Elephant:
     #     return self.end_effector_index
     
     # def sim_get_arm_all_jointInfo(self):
-    #     return arm_jointInfo
+    #     return  
     
     # def sim_get_joint_bounds(self):
     #     return joint_bounds
 
-    # def sim_get_current_joint_values(self):
-    #     return current_joint_values
-
+    def check_state(self):
+        return self.robot.state_check()
+    
+    def check_running(self):
+        return self.robot.check_running()
+    
+    def get_current_joint_values(self):
+        return self.robot.get_angles()
+    
+    def get_current_cartesian(self):
+        return self.robot.get_coords()
     # def sim_get_current_end_effector_pose(self):
     #     return Pose(end_effector_info[0], end_effector_info[1])
 
-    # def sim_set_arm_to_joint_values(self, joint_values):
-    #     self.client.run(10)
-
+    def set_arm_to_joint_value(self, joint=None, joint_value=None, speed=500):
+        self.robot.write_angle(joint, joint_value, speed=500)
+        
+ 
     # def sim_debug_set_arm_to_joint_values(self):
     #     pass
 
-    # def sim_move_arm_to_joint_values(self, joint_values, threshold=0.015, timeout=0.05):
-    #     self.client.run(40)
+    def move_arm_to_joint_values(self, joint_values=None, speed=500):
+        self.robot.write_angles(joint_values, speed=500)
 
-    # def sim_joints_to_cartesian(self, joint_values):
-    #     return Pose(position, orientation)
+    def joints_to_cartesian(self, joint_values):
+        return Pose(position, orientation)
 
-    # def sim_cartesian_to_joints(self, pose, max_iterations=1000, threshold=1e-4):
-    #     return joint_values
+    def cartesian_to_joints(self, pose, max_iterations=1000, threshold=1e-4):
+        return joint_values
 
     # def sim_rotate_end_effector(self, angle):
     #     print("[BestMan_Sim][Arm] \033[34mInfo\033[0m: Rotate end effector completed!")
@@ -119,8 +120,56 @@ class Bestman_Real_Elephant:
     # def sim_calculate_IK_error(self, goal_pose):
     #     return distance
 
-    
+    # ----------------------------------------------------------------
+    # Functions for gripper
+    # ----------------------------------------------------------------
+    def open_gripper(self, speed=100, open_scale=None):
+        """open gripper
+        Args:
+            state (int): open_scale, 0-100
+            speed (int): speed, 1-100
+
+        """
+        # Gripper settings transparent transmission mode
+        self.robot.set_gripper_mode(0)
+        time.sleep(1)
+        if open_scale == None:
+            # gripper fully open
+            self.robot.set_gripper_state(0,speed)
+            time.sleep(1)
+        else:
+            # gripper opening specified position
+            self.robot.set_gripper_value(open_scale, speed)
+        print(
+                "[BestMan_Sim][Gripper] \033[34mInfo\033[0m: Gripper open!"
+            )
+
+    def close_gripper(self, speed=100, close_scale=None):
+        """open gripper
+        Args:
+            state (int): open_scale, 0-100
+            speed (int): speed, 1-100
+
+        """
+        # Gripper settings transparent transmission mode
+        self.robot.set_gripper_mode(0)
+        time.sleep(1)
+        if close_scale == None:
+            # gripper fully open
+            self.robot.set_gripper_state(1,speed)
+            time.sleep(1)
+        else:
+            # gripper opening specified position
+            self.robot.set_gripper_value(close_scale, speed)
+        print(
+                "[BestMan_Sim][Gripper] \033[34mInfo\033[0m: Gripper close!"
+            )
 
 if __name__=='__main__':
     bestman = Bestman_Real_Elephant(robot_ip='192.168.113.130')
+    # bestman.state_on()
+    bestman.get_current_cartesian()
+    bestman.get_current_joint_values()
+    bestman.check_running()
+    bestman.check_state()
     
