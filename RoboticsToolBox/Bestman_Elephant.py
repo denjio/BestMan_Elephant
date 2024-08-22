@@ -102,11 +102,11 @@ class Bestman_Real_Elephant:
     def move_arm_to_joint_values(self, joint_values=None, speed=500):
         self.robot.write_angles(joint_values, speed=500)
 
-    def joints_to_cartesian(self, joint_values):
-        return Pose(position, orientation)
+    # def joints_to_cartesian(self, joint_values):
+    #     return Pose(position, orientation)
 
-    def cartesian_to_joints(self, pose, max_iterations=1000, threshold=1e-4):
-        return joint_values
+    # def cartesian_to_joints(self, pose, max_iterations=1000, threshold=1e-4):
+    #     return joint_values
 
     # def sim_rotate_end_effector(self, angle):
     #     print("[BestMan_Sim][Arm] \033[34mInfo\033[0m: Rotate end effector completed!")
