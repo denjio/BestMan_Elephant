@@ -8,8 +8,12 @@
 """ 
 from pymycobot import ElephantRobot
 import time
+import sys
+import os
 
-
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+print(os.path.join(parent_dir, 'RoboticsToolBox'))
+sys.path.append(os.path.join(parent_dir, 'RoboticsToolBox'))
 class Bestman_Real_Elephant:
     def __init__(self, robot_ip, frequency=1):
         # Initialize the robot and gripper with the provided IPs and frequency
@@ -92,16 +96,43 @@ class Bestman_Real_Elephant:
     # def sim_get_current_end_effector_pose(self):
     #     return Pose(end_effector_info[0], end_effector_info[1])
 
-    def set_arm_to_joint_value(self, joint=None, joint_value=None, speed=500):
+    def set_single_joint_value(self, joint=None, joint_value=None, speed=500):
         self.robot.write_angle(joint, joint_value, speed=500)
         self.robot.command_wait_done()
-        
  
     # def sim_debug_set_arm_to_joint_values(self):
     #     pass
 
-    def move_arm_to_joint_values(self, joint_values=None, speed=500):
+    def set_arm_joint_values(self, joint_values=None, speed=500):
         self.robot.write_angles(joint_values, speed=500)
+        self.robot.command_wait_done()
+    
+    def set_single_coord(self, axis, value, speed):
+        # 功能：发送单个坐标值给机械臂进行移动
+        # 参数：机器人笛卡尔位置[0代表x,1代表y,2代表z,3代表rx,4代表ry,5代表rz]，要到达的坐标值，机械臂运动的速度:[0-6000]
+        self.robot.write_coord(axis, value, speed=1000)
+
+    def set_arm_coords(self,coords,speed):
+        # 功能：发送所有角度给机械臂所有关节
+        # 参数：关节角度(列表类型)，机械臂运动的速度:[0-5999]
+        self.robot.write_coords(coords,speed=1000)
+
+    def set_jog_angel(self,joint_str, direction, ):
+        # 功能： 控制机器人按照指定的角度持续移动
+        # 参数：机械臂的关节[J1/J2/J3/J4/J5/J6]，主要控制机器臂移动的方向[-1=负方向 ，0=停止，1=正方向]，机器人运动的速度
+        self.robot.jog_angle(joint_str, direction, speed=1)
+        self.robot.command_wait_done()
+    
+    def set_jog_coord(self, axis_str, direction):
+        # 功能： 控制机器人按照指定的坐标轴方向持续移动
+        # 参数：笛卡尔的方向[x/y/z/rx/ry/rz],主要控制机器臂移动的方向[-1=负方向 ，0=停止，1=正方向],机器人运动的速度
+        self.robot.jog_coord(axis_str, direction, speed=1)
+        self.robot.command_wait_done()
+
+    def set_jog_relative(self, joint_id, angle, speed, mode):
+        # 功能：以当前位置往某个坐标轴方向进行相对运动，或是以当前关节角度往某个关节的角度进行相对运动
+        # 参数：相对运动的方向或角度['J1'——'J6', 'X', 'Y', 'Z', 'RX', 'RY', 'RZ'],相对移动的距离或角度,移动速度,运动模式[0 或 1 ]
+        self.robot.jog_relative(joint_id, angle, speed, mode)
         self.robot.command_wait_done()
 
     # def joints_to_cartesian(self, joint_values):
@@ -170,7 +201,7 @@ class Bestman_Real_Elephant:
             )
 
 if __name__=='__main__':
-    bestman = Bestman_Real_Elephant(robot_ip='192.168.113.130')
+    bestman = Bestman_Real_Elephant(robot_ip='192.168.43.38')
     bestman.power_off()
     # bestman.move_arm_to_joint_values(([0.0, -120.0, 120.0, -90.0, -90.0, -0.0]), 1000) # ([0,-90,0,-90,0,0]) ([0.0, -120.0, 120.0, -90.0, -90.0, -0.0])
     # bestman.close_gripper(20)
