@@ -94,6 +94,7 @@ class Bestman_Real_Elephant:
 
     def set_arm_to_joint_value(self, joint=None, joint_value=None, speed=500):
         self.robot.write_angle(joint, joint_value, speed=500)
+        self.robot.command_wait_done()
         
  
     # def sim_debug_set_arm_to_joint_values(self):
@@ -101,6 +102,7 @@ class Bestman_Real_Elephant:
 
     def move_arm_to_joint_values(self, joint_values=None, speed=500):
         self.robot.write_angles(joint_values, speed=500)
+        self.robot.command_wait_done()
 
     # def joints_to_cartesian(self, joint_values):
     #     return Pose(position, orientation)
@@ -140,6 +142,7 @@ class Bestman_Real_Elephant:
         else:
             # gripper opening specified position
             self.robot.set_gripper_value(open_scale, speed)
+        self.robot.command_wait_done()
         print(
                 "[BestMan_Sim][Gripper] \033[34mInfo\033[0m: Gripper open!"
             )
@@ -161,16 +164,15 @@ class Bestman_Real_Elephant:
         else:
             # gripper opening specified position
             self.robot.set_gripper_value(close_scale, speed)
+        self.robot.command_wait_done()
         print(
                 "[BestMan_Sim][Gripper] \033[34mInfo\033[0m: Gripper close!"
             )
 
 if __name__=='__main__':
     bestman = Bestman_Real_Elephant(robot_ip='192.168.113.130')
-    # bestman.state_on()
-    bestman.state_on()
-    bestman.get_current_cartesian()
-    bestman.get_current_joint_values()
-    bestman.check_running()
-    bestman.check_state()
-    
+    bestman.power_off()
+    # bestman.move_arm_to_joint_values(([0.0, -120.0, 120.0, -90.0, -90.0, -0.0]), 1000) # ([0,-90,0,-90,0,0]) ([0.0, -120.0, 120.0, -90.0, -90.0, -0.0])
+    # bestman.close_gripper(20)
+    # bestman.open_gripper()
+    # bestman.close_gripper()
