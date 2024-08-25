@@ -10,12 +10,14 @@ from pymycobot import ElephantRobot
 import time
 import sys
 import os
+from scipy.spatial.transform import Rotation as R
+from utility import *
 
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 print(os.path.join(parent_dir, 'RoboticsToolBox'))
 sys.path.append(os.path.join(parent_dir, 'RoboticsToolBox'))
 class Bestman_Real_Elephant:
-    def __init__(self, robot_ip, frequency=1):
+    def __init__(self, robot_ip, frequency=10):
         # Initialize the robot and gripper with the provided IPs and frequency
         self.robot = ElephantRobot(robot_ip, 5001)
         # Necessary instructions to start the robot
@@ -88,11 +90,17 @@ class Bestman_Real_Elephant:
     def check_running(self):
         return self.robot.check_running()
     
+    def check_error(self):
+        # 功能：机器人错误检测
+        return self.robot.read_next_error()
+
+        
     def get_current_joint_values(self):
         return self.robot.get_angles()
     
     def get_current_cartesian(self):
         return self.robot.get_coords()
+    
     # def sim_get_current_end_effector_pose(self):
     #     return Pose(end_effector_info[0], end_effector_info[1])
 
@@ -107,6 +115,50 @@ class Bestman_Real_Elephant:
         self.robot.write_angles(joint_values, speed=500)
         self.robot.command_wait_done()
     
+    def move_arm_follow_target_trajectory(self, target_trajectory,trajectory_type='euler', target_vel=None, target_acc=None, MAX_VEL=None, MAX_ACC=None):
+        '''
+        Move arm to a few set of joint angles, considering physics.
+
+        Args:
+            target_trajectory: A list of desired joint angles (in radians) for each joint of the arm.
+            trajectory: 'pose' or 'euler'
+            target_vel: Optional. A list of target velocities for each joint.
+            target_acc: Optional. A list of target accelerations for each joint.
+            MAX_VEL: Optional. A list of maximum velocities for each joint.
+            MAX_ACC: Optional. A list of maximum accelerations for each joint.
+        '''
+        period = 1.0 / self.frequency
+        # DOF = len(self.robot_states.q)
+        # if target_vel is None:
+        #     target_vel = [0.0] * DOF
+        # if target_acc is None:
+        #     target_acc = [0.0] * DOF
+        # if MAX_VEL is None:
+        #     MAX_VEL = [3.0] * DOF
+        # if MAX_ACC is None:
+        #     MAX_ACC = [1.0] * DOF
+        
+        for target_pos in target_trajectory:
+            
+            # Monitor fault on robot server
+            # if self.robot.isFault():
+            #     raise Exception("Fault occurred on robot server, exiting ...")
+            if trajectory_type == 'eurler':
+                target_pos = target_pos
+            elif trajectory_type == 'pose':
+                target_pos = pose_to_euler(target_pos)
+            
+            # 初始关节角度猜测 (用于迭代求解)
+            initial_guess = self.get_current_joint_values()
+            # 求解逆运动学
+            joint_angles = inverse_kinematics(target_pos, initial_guess)
+            print("Calculated joint angles:", joint_angles)
+            # Send command
+            self.set_arm_joint_values(joint_angles)
+    
+            # Use sleep to control loop period
+            time.sleep(period)
+ 
     def set_single_coord(self, axis, value, speed):
         # 功能：发送单个坐标值给机械臂进行移动
         # 参数：机器人笛卡尔位置[0代表x,1代表y,2代表z,3代表rx,4代表ry,5代表rz]，要到达的坐标值，机械臂运动的速度:[0-6000]
@@ -153,6 +205,7 @@ class Bestman_Real_Elephant:
     # def sim_calculate_IK_error(self, goal_pose):
     #     return distance
 
+    
     # ----------------------------------------------------------------
     # Functions for gripper
     # ----------------------------------------------------------------
@@ -200,10 +253,10 @@ class Bestman_Real_Elephant:
                 "[BestMan_Sim][Gripper] \033[34mInfo\033[0m: Gripper close!"
             )
 
-if __name__=='__main__':
-    bestman = Bestman_Real_Elephant(robot_ip='192.168.43.38')
-    bestman.power_off()
-    # bestman.move_arm_to_joint_values(([0.0, -120.0, 120.0, -90.0, -90.0, -0.0]), 1000) # ([0,-90,0,-90,0,0]) ([0.0, -120.0, 120.0, -90.0, -90.0, -0.0])
-    # bestman.close_gripper(20)
-    # bestman.open_gripper()
-    # bestman.close_gripper()
+# if __name__=='__main__':
+#     bestman = Bestman_Real_Elephant(robot_ip='192.168.43.38')
+#     bestman.power_off()
+#     # bestman.move_arm_to_joint_values(([0.0, -120.0, 120.0, -90.0, -90.0, -0.0]), 1000) # ([0,-90,0,-90,0,0]) ([0.0, -120.0, 120.0, -90.0, -90.0, -0.0])
+#     # bestman.close_gripper(20)
+#     # bestman.open_gripper()
+#     # bestman.close_gripper()
