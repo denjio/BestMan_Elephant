@@ -14,7 +14,6 @@ from scipy.spatial.transform import Rotation as R
 from utility import *
 
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-print(os.path.join(parent_dir, 'RoboticsToolBox'))
 sys.path.append(os.path.join(parent_dir, 'RoboticsToolBox'))
 class Bestman_Real_Elephant:
     def __init__(self, robot_ip, frequency=10):
@@ -141,20 +140,18 @@ class Bestman_Real_Elephant:
         for target_pos in target_trajectory:
             
             # Monitor fault on robot server
-            # if self.robot.isFault():
-            #     raise Exception("Fault occurred on robot server, exiting ...")
             if trajectory_type == 'eurler':
                 target_pos = target_pos
             elif trajectory_type == 'pose':
                 target_pos = pose_to_euler(target_pos)
             
-            # 初始关节角度猜测 (用于迭代求解)
-            initial_guess = self.get_current_joint_values()
-            # 求解逆运动学
-            joint_angles = inverse_kinematics(target_pos, initial_guess)
-            print("Calculated joint angles:", joint_angles)
+            # # 初始关节角度猜测 (用于迭代求解)
+            # initial_guess = self.get_current_joint_values()
+            # # 求解逆运动学
+            # joint_angles = inverse_kinematics(target_pos, initial_guess)
+            # print("Calculated joint angles:", target_pos)
             # Send command
-            self.set_arm_joint_values(joint_angles)
+            self.set_arm_coords(target_pos)
     
             # Use sleep to control loop period
             time.sleep(period)
@@ -164,11 +161,12 @@ class Bestman_Real_Elephant:
         # 参数：机器人笛卡尔位置[0代表x,1代表y,2代表z,3代表rx,4代表ry,5代表rz]，要到达的坐标值，机械臂运动的速度:[0-6000]
         self.robot.write_coord(axis, value, speed=1000)
 
-    def set_arm_coords(self,coords,speed):
+    def set_arm_coords(self,coords,speed=1000):
         # 功能：发送所有角度给机械臂所有关节
         # 参数：关节角度(列表类型)，机械臂运动的速度:[0-5999]
-        self.robot.write_coords(coords,speed=1000)
-
+        self.robot.write_coords(coords,speed)
+        self.robot.command_wait_done()
+        
     def set_jog_angel(self,joint_str, direction, ):
         # 功能： 控制机器人按照指定的角度持续移动
         # 参数：机械臂的关节[J1/J2/J3/J4/J5/J6]，主要控制机器臂移动的方向[-1=负方向 ，0=停止，1=正方向]，机器人运动的速度

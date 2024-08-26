@@ -7,6 +7,10 @@
 from scipy.spatial.transform import Rotation as R
 import numpy as np
 from scipy.optimize import minimize
+from urdf_parser_py.urdf import URDF
+# import pykdl
+# # 解析URDF文件
+# robot = URDF.from_xml_file("/home/robot/Desktop/BestMan_Elephant/Asset/mycobot_pro_630.urdf")
 
 def pose_to_euler(pose):
     '''
