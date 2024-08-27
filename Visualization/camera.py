@@ -16,7 +16,7 @@ class CameraRoot:
         self.base_path = base_path
 
         self.camera_id_list = None
-        self.serial_number_dict = None # {0: '241122072950', 1: '241222073328'}
+        self.serial_number_dict = None # {0: '239222303418'}, {0: '241122072950', 1: '241222073328'}
         self.serial_number_list = None
         self.pipeline_list = None
         self.config_list = None
@@ -81,14 +81,17 @@ class CameraRoot:
             for n, camera_id in enumerate(self.camera_id_list):
                 self.frame_list[n] = self.pipeline_list[frame_id].wait_for_frames()
         else:  # get all frame
+            
             if len(self.camera_id_list) == 1:
+                # 只有一个摄像机
+                self.frame_list = []
                 self.frame_list.append(self.pipeline_list[0].wait_for_frames())
             else:
                 for n, camera_id in enumerate(self.camera_id_list):
                     self.frame_list[n] = self.pipeline_list[n].wait_for_frames()
 
         # align RGBD
-        for i in range(len(self.frame_list)):      
+        for i in range(len(self.frame_list)):  
             self.align.process(self.frame_list[i])
  
     def __rgb_image(self, camera_id=0):
@@ -134,7 +137,8 @@ class CameraRoot:
         Count = 0
         while Count < image_num:
             self.wait_frames()
-            rgb, depth, colorizer_depth = self.get_visual_data(camera_id=1)
+            # 这里camera_id 要手动跟新
+            rgb, depth, colorizer_depth = self.get_visual_data(camera_id=0)
 
             cv2.imshow("rgb", rgb)
             cv2.imshow("depth", depth)
@@ -185,7 +189,7 @@ if __name__ == "__main__":
     cap = CameraRoot()
     print(cap.serial_number_dict)
     cap.get_calibration_image_by_user(image_num=2)
-    cap.get_3d_points()
+    # cap.get_3d_points()
     # # 视频保存路径
     # video_path = 'a.mp4'
     # video_depth_path = 'b.mp4'
