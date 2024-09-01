@@ -48,8 +48,9 @@ class Bestman_Real_Elephant:
        
     def power_off(self,):
         self.robot.state_off()
+        time.sleep(2)
         self.robot.power_off()
-        time.sleep(3)
+        time.sleep(2)
     
     
     # ----------------------------------------------------------------
@@ -151,7 +152,7 @@ class Bestman_Real_Elephant:
             # joint_angles = inverse_kinematics(target_pos, initial_guess)
             # print("Calculated joint angles:", target_pos)
             # Send command
-            self.set_arm_coords(target_pos)
+            self.set_arm_coords(target_pos, speed=500)
     
             # Use sleep to control loop period
             time.sleep(period)
@@ -162,8 +163,8 @@ class Bestman_Real_Elephant:
         self.robot.write_coord(axis, value, speed=1000)
 
     def set_arm_coords(self,coords,speed=1000):
-        # 功能：发送所有角度给机械臂所有关节
-        # 参数：关节角度(列表类型)，机械臂运动的速度:[0-5999]
+        # 功能：发送整体坐标和姿态,让机械臂头部从原来点移动到指定点
+        # 参数：机器人笛卡尔位姿（列表类型），机械臂运动的速度:[0-6000]
         self.robot.write_coords(coords,speed)
         self.robot.command_wait_done()
         

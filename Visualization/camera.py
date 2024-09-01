@@ -188,7 +188,7 @@ class CameraRoot:
 if __name__ == "__main__":
     cap = CameraRoot()
     print(cap.serial_number_dict)
-    cap.get_calibration_image_by_user(image_num=2)
+    cap.get_calibration_image_by_user(image_num=20)
     # cap.get_3d_points()
     # # 视频保存路径
     # video_path = 'a.mp4'
