@@ -49,9 +49,9 @@ def main():
         # step2:提取不同角度拍摄的图片
         images = glob.glob('/home/robot/Desktop/BestMan_Elephant/Visualization/calibration_image/*.png')
         images = sorted(images)
-        
+        # print('images',images)
         for i,fname in enumerate(images):
-            print(1)
+            # print(fname)
             img = cv2.imread(fname) # 读取图片
             gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY) # RGB转换成灰度图
 
@@ -84,22 +84,22 @@ def main():
         print(rvecs,tvecs)
         # objpoints = np.array(objpoints).squeeze(1)
         # imgpoints = np.array(imgpoints).squeeze(2)
-        rvecs = []
-        tvecs = []
-        # 遍历每个视角
-        for i in range(8):
-            # 从每个视角中提取 3D 点和 2D 点
-            obj_pts = objpoints[i]
-            img_pts = imgpoints[i]
+        # rvecs = []
+        # tvecs = []
+        # # 遍历每个视角
+        # for i in range(8):
+        #     # 从每个视角中提取 3D 点和 2D 点
+        #     obj_pts = objpoints[i]
+        #     img_pts = imgpoints[i]
 
-            # 调用 solvePnP 计算姿态
-            success, rvec, tvec = cv2.solvePnP(obj_pts, img_pts, mtx, dist)
+        #     # 调用 solvePnP 计算姿态
+        #     success, rvec, tvec = cv2.solvePnP(obj_pts, img_pts, mtx, dist)
 
-            # 存储计算得到的旋转和平移向量
-            if success:
-                rvecs.append(rvec)
-                tvecs.append(tvec)
-        # 调用 solvePnP 进行姿态估计
+        #     # 存储计算得到的旋转和平移向量
+        #     if success:
+        #         rvecs.append(rvec)
+        #         tvecs.append(tvec)
+        # # 调用 solvePnP 进行姿态估计
          
         mtx_list = mtx.flatten().tolist()  
         dist_list = dist.flatten().tolist()  

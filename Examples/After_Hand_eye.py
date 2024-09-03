@@ -32,52 +32,12 @@ rvecs = np.array(camera_params['rvecs'])
 tvecs = np.array(camera_params['tvecs'])
 
 # 假设图像中目标点的像素坐标 (u, v) 和深度 Z
-u, v= 0, -0 # 假设中心点
-Z = 0.455 # 假设深度为 2 米
-
-# 去畸变并将图像坐标转换为摄像机坐标
+u, v= 300, 619 # 假设中心点
+Z = 0.750 # 深度
+# 去畸变
 undistorted_points = cv2.undistortPoints(np.array([[u, v]], dtype=np.float32), mtx, dist, None, mtx)
-import numpy as np
-
-def pixel_to_camera_coords(u, v, Z, K):
-    """
-    将像素坐标转换为相机坐标系下的三维坐标。
-
-    参数:
-    u, v: 像素坐标 (u, v)
-    Z: 该像素点的深度值
-    K: 相机内参矩阵，3x3 numpy数组
-
-    返回:
-    相机坐标系下的三维坐标 (X, Y, Z)
-    """
-    # 提取相机内参
-    fx = K[0, 0]
-    fy = K[1, 1]
-    cx = K[0, 2]
-    cy = K[1, 2]
-    
-    # 计算归一化平面坐标
-    x_norm = (u - cx) / fx
-    y_norm = (v - cy) / fy
-    
-    # 计算相机坐标
-    X = x_norm * Z
-    Y = y_norm * Z
-
-    return np.array([X, Y, Z])
-
- 
-# 给定像素坐标 (u, v) 和深度值 Z
-u = undistorted_points[0][0][0] 
-v = undistorted_points[0][0][1]
-Z = 1  # 例如1.5米
-
-# 计算相机坐标系下的三维坐标
-camera_coords = pixel_to_camera_coords(u, v, Z, mtx)
-print(f"相机坐标系下的三维坐标: {camera_coords}")
-
-print(undistorted_points)
+# 将图像坐标转换为摄像机坐标
+# 给定像素坐标 (u, v) 和深度值 Z 计算相机坐标系下的三维坐标
 X = (undistorted_points[0][0][0] ) * Z 
 Y = (undistorted_points[0][0][1] ) * Z 
 P_camera = np.array([X, Y, Z, 1.0])
@@ -85,7 +45,6 @@ print(P_camera)
 
 # 加载URDF文件
 robot = URDF.from_xml_file('/home/robot/Desktop/BestMan_Elephant/Asset/mycobot_pro_630.urdf')
-# print(robot)
 
 end_effort_list=[
 [158.275733,-268.295108,326.504688,173.855638,6.861038,155.282662],
@@ -128,15 +87,14 @@ for i in range(len(rvecs)):
     R_cam2target, _ = cv2.Rodrigues(rvecs[i])
     
     # # 计算标定板相对于相机的姿态
-    R_target2cam = R_cam2target.T
-    t_target2cam = -np.dot(R_target2cam, tvecs[i])
-    
+    R_target2cam = R_cam2target
+    t_target2cam = tvecs[i]
     R_target2cam_list.append(R_target2cam)
     t_target2cam_list.append(t_target2cam)
 R_base2gripper = []
 t_base2gripper = []
-R_target2cam = []
-t_target2cam = []
+R_cam2target = []
+t_cam2target = []
 # print(R_target2cam_list, t_target2cam_list)
  # 开始为各个参数赋值
 for i in range(len(rvecs)):
@@ -172,13 +130,12 @@ for i in range(len(rvecs)):
     # 获标定板在相机坐标系下的旋转矩阵,把旋转向量转成旋转矩阵
     dst1, jacobian1 = cv2.Rodrigues(rvecs[i])
     # 相机坐标系旋转矩阵转置
-    R_target2cam.append(dst1.T)
+    R_cam2target.append(dst1.T)
     # 写入相机坐标系平移向量,平移向量需要乘原本的负的旋转矩阵
-    t_target2cam.append(np.matmul(-dst1.T, tvecs[i]))
-print(t_base2gripper,t_target2cam)
+    t_cam2target.append(np.matmul(-dst1.T, tvecs[i]))
 # 使用calibrateHandEye进行手眼标定
 R_cam2base, t_cam2base = cv2.calibrateHandEye(
-    R_target2cam_list, t_target2cam_list,
+    R_gripper2base_list, t_gripper2base_list,
     R_target2cam_list, t_target2cam_list, method=cv2.CALIB_HAND_EYE_TSAI
 )
 # print('R_cam2base', R_cam2base,'t_cam2base', t_cam2base)
@@ -192,8 +149,8 @@ T_cam2base[:3, 3] = t_cam2base.flatten()
 point_base = np.dot(T_cam2base, P_camera)
 print('point_base', point_base)
 T_base2cam = np.linalg.inv(T_cam2base)
-point_base = np.dot(T_base2cam, P_camera)
-print('point_base', point_base)
+# point_base = np.dot(T_base2cam, P_camera)
+# print('point_base', point_base)
 # 计算点在机械臂基座坐标系下的位置
 x_base, y_base, z_base = point_base[0], point_base[1],point_base[2]
 
@@ -203,7 +160,7 @@ bestman = Bestman_Real_Elephant("192.168.43.38", 5001)
 bestman.get_current_cartesian()
 bestman.get_current_joint_values()
 # 定义垂直向下的欧拉角
-# bestman.set_arm_coords([x_base, -121.39107764458234 ,327.938783,171.781911,5.572254,129.559729],  speed=500)
+bestman.set_arm_coords([187,-170.029450,364.804202,179.288396,1.539904,133.136652],  speed=500)
 # bestman.set_arm_joint_values([0.0, -120.0, 120.0, -90.0, -90.0, -0.0],speed=500)
 
 bestman.get_current_cartesian()
@@ -211,3 +168,26 @@ bestman.get_current_joint_values()
 # 将基座坐标系中的点转换回相机坐标系
 P_cam = np.dot(T_cam2base, [0,0,0,1])
 print(P_cam) 
+#结果验证，原则上来说，每次结果相差较小
+for i in range(len(tvecs)):
+
+    RT_end_to_base=np.column_stack((R_gripper2base_list[i],t_gripper2base_list[i]))
+    # print('RT_end_to_base', RT_end_to_base)
+    RT_end_to_base=np.row_stack((RT_end_to_base,np.array([0,0,0,1])))
+    
+
+    RT_chess_to_cam=np.column_stack((R_target2cam_list[i],t_target2cam_list[i]))
+    # print('RT_chess_to_cam', RT_chess_to_cam)
+    RT_chess_to_cam=np.row_stack((RT_chess_to_cam,np.array([0,0,0,1])))
+    # print(RT_chess_to_cam)
+
+    RT_cam_to_end=np.column_stack((R_cam2base,t_cam2base))
+    RT_cam_to_end=np.row_stack((RT_cam_to_end,np.array([0,0,0,1])))
+    # print(RT_cam_to_end)
+
+    RT_chess_to_base=RT_end_to_base@RT_cam_to_end@RT_chess_to_cam#即为固定的棋盘格相对于机器人基坐标系位姿
+    RT_chess_to_base=np.linalg.inv(RT_chess_to_base)
+    print('第',i,'次')
+    print(RT_chess_to_base[:3,:])
+    print('')
+ 
