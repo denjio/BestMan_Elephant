@@ -142,7 +142,7 @@ class CameraRoot:
 
             cv2.imshow("rgb", rgb)
             cv2.imshow("depth", depth)
-            
+            cv2.imshow("colorizer_depth", colorizer_depth)
             key = cv2.waitKey(1) & 0xFF  
 
             if key == ord('q'):

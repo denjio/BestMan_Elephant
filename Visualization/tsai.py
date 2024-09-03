@@ -38,7 +38,7 @@ def solve_axb(A, b):
 	
 def solve_axxb(T_A_list, T_B_list):
 	'''求解AX=XB
-	其中A,B为已知量， X为未知量。
+	其中A,B为已知量, X为未知量。
 	'''
 	# 获得数据对数
 	n_pair = len(T_A_list)

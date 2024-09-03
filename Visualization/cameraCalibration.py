@@ -74,14 +74,33 @@ def main():
                 cv2.imshow(fname + " failed", img)
         # while True:
         #     pass
-            cv2.waitKey(500)
+            cv2.waitKey(1)
         cv2.destroyAllWindows()
 
         h,w = img.shape[:2]
 
         # step4:相加标定
         ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1],None,None)
-        
+        print(rvecs,tvecs)
+        # objpoints = np.array(objpoints).squeeze(1)
+        # imgpoints = np.array(imgpoints).squeeze(2)
+        rvecs = []
+        tvecs = []
+        # 遍历每个视角
+        for i in range(8):
+            # 从每个视角中提取 3D 点和 2D 点
+            obj_pts = objpoints[i]
+            img_pts = imgpoints[i]
+
+            # 调用 solvePnP 计算姿态
+            success, rvec, tvec = cv2.solvePnP(obj_pts, img_pts, mtx, dist)
+
+            # 存储计算得到的旋转和平移向量
+            if success:
+                rvecs.append(rvec)
+                tvecs.append(tvec)
+        # 调用 solvePnP 进行姿态估计
+         
         mtx_list = mtx.flatten().tolist()  
         dist_list = dist.flatten().tolist()  
         rvecs_list = [vec.flatten().tolist() for vec in rvecs]  
@@ -104,6 +123,7 @@ def main():
             "rvecs": rvecs_list,  
             "tvecs": tvecs_list  
         }  
+     
 
         # print(camera_params)
         # save camera params to file 
@@ -117,7 +137,7 @@ def main():
         print(f"数据已成功写入{filename}")
         
         # step5:去畸变
-        img = cv2.imread('/home/robot/Desktop/BestMan_Elephant/Visualization/calibration_image/test_16.png')
+        img = cv2.imread('/home/robot/Desktop/BestMan_Elephant/Visualization/calibration_image/test_0.png')
         h, w = img.shape[:2]
         newcameramtx, roi = cv2.getOptimalNewCameraMatrix(mtx, dist, (w,h), 1, (w,h))
 
@@ -131,10 +151,10 @@ def main():
         cv2.imshow("image undistorted1", dst)
         cv2.imshow("image undistorted1 ROI", dst2)
         cv2.imwrite('/home/robot/Desktop/BestMan_Elephant/Visualization/undistorted/img_undistort.png', dst2)
-
         # 使用remapping
         mapx, mapy = cv2.initUndistortRectifyMap(mtx, dist, None, newcameramtx, (w,h), 5)
         dst = cv2.remap(img, mapx, mapy, cv2.INTER_LINEAR)
+        
 
         # crop the image
         x, y, w, h = roi
@@ -144,16 +164,16 @@ def main():
         cv2.imwrite('/home/robot/Desktop/BestMan_Elephant/Visualization/undistorted/img_remap.png', dst2)
         cv2.waitKey(1)
         cv2.destroyAllWindows()
-
+        # print(1)
         # step6:计算重投影误差：
         mean_error = 0
         for i in range(len(objpoints)):
             # 使用内外参和畸变参数对点进行重投影
             imgpoints2, _ = cv2.projectPoints(objpoints[i], rvecs[i], tvecs[i], mtx, dist)
-            print(objpoints[i],imgpoints2)
+            # print(imgpoints[i][0], imgpoints2[0])
             error = cv2.norm(imgpoints[i], imgpoints2, cv2.NORM_L2)/len(imgpoints2) # L2范数，均方误差
             mean_error += error
-
+        # print(1)
         mean_error /= len(objpoints)
         print("total error: {}".format(mean_error))
 
