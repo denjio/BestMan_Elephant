@@ -94,7 +94,9 @@ class Bestman_Real_Elephant:
         # 功能：机器人错误检测
         return self.robot.read_next_error()
 
-        
+    def set_carte_torque_limit(self, xis_str, value):
+        return self.robot.set_carte_torque_limit(xis_str, value) 
+      
     def get_current_joint_values(self):
         return self.robot.get_angles()
     

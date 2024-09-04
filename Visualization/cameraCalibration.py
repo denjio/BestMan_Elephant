@@ -53,7 +53,7 @@ def main():
         for i,fname in enumerate(images):
             # print(fname)
             img = cv2.imread(fname) # 读取图片
-            gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY) # RGB转换成灰度图
+            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) # RGB转换成灰度图
 
             # step3:计算标定板的角点的2D坐标
             # 寻找角点坐标，如果找到ret返回True, corners:[col, row]，原点在左上角

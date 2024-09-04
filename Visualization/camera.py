@@ -67,8 +67,28 @@ class CameraRoot:
            
         # start pipeline
         for n, pipeline in enumerate(self.pipeline_list):
-            pipeline.start(self.config_list[n])
-    
+            profile = pipeline.start(self.config_list[n])
+            # 获取深度和RGB流的内参
+            depth_sensor = profile.get_device().first_depth_sensor()
+            depth_scale = depth_sensor.get_depth_scale()
+
+            # 获取对齐后的内参
+            color_stream = profile.get_stream(rs.stream.color)
+            color_intrinsics = color_stream.as_video_stream_profile().get_intrinsics()
+
+            depth_stream = profile.get_stream(rs.stream.depth)
+            depth_intrinsics = depth_stream.as_video_stream_profile().get_intrinsics()
+              # 现在使用 color_intrinsics 作为对齐后的内参
+            fx = color_intrinsics.fx
+            fy = color_intrinsics.fy
+            cx = color_intrinsics.ppx
+            cy = color_intrinsics.ppy
+            # 对齐后的内参矩阵
+            print("畸变系数:", color_intrinsics.coeffs)
+            aligned_intrinsics_matrix = np.array([[fx, 0, cx],
+                                                [0, fy, cy],
+                                                [0,  0,  1]])
+            print("对齐后的内参矩阵:\n", aligned_intrinsics_matrix)
     def wait_frames(self, frame_id=None):
         '''
             等待进数据
@@ -92,7 +112,7 @@ class CameraRoot:
 
         # align RGBD
         for i in range(len(self.frame_list)):  
-            self.align.process(self.frame_list[i])
+           self.aligned_frames = self.align.process(self.frame_list[i])
  
     def __rgb_image(self, camera_id=0):
         color_frame = self.frame_list[camera_id].get_color_frame()
@@ -125,9 +145,14 @@ class CameraRoot:
         rgb = self.__rgb_image(camera_id)
         depth, colorizer_depth = self.__depth_frame(camera_id)
 
+        # 对齐深度帧到颜色帧
+
+        # 获取对齐后的深度帧和颜色帧
+        aligned_depth_frame = np.asanyarray(self.aligned_frames.get_depth_frame().get_data())
+        color_frame = np.asanyarray(self.aligned_frames.get_color_frame().get_data())
         # ir_l_image, ir_r_image = self.__infrared_frame(camera_id)
 
-        return rgb, depth, colorizer_depth
+        return color_frame, aligned_depth_frame, colorizer_depth
 
     def get_video_data(self, ):
 
@@ -148,7 +173,8 @@ class CameraRoot:
             if key == ord('q'):
                 break
             if key == ord("w"):
-                self.save_image(rgb, 'test' + '_' + str(Count))
+                self.save_image(np.asanyarray(rgb), str(Count+1)+'c')
+                self.save_image(np.asanyarray(depth, dtype=np.uint16), str(Count+1)+'d')
                 Count += 1
     
         self.stop()
@@ -174,7 +200,7 @@ class CameraRoot:
     def save_image(self, data, save_name):
         # process path
         save_path = self.base_path + os.sep + save_name + '.png'
-
+        print(data)
         # save
         cv2.imwrite(save_path, data)
         print("Save Image at: ", save_path)
