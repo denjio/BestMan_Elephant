@@ -104,7 +104,6 @@ def get_mouse_click(event, x, y, flags, param):
         z = aligned_depth_frame.get_distance(x, y) * 1000  # 将 z 值从米转换为毫米
         
         print(f"点击位置 (u, v): ({x}, {y}), 深度值 z: {z} 毫米")
-
         # 图像坐标系转换到机械臂坐标系
         if turn == 0:
             x_base, y_base, z_base = get_base_coordinate_arm(T_Cam2Robot_arm1, x, y, z)
@@ -112,7 +111,6 @@ def get_mouse_click(event, x, y, flags, param):
         else:
             x_base, y_base, z_base = get_base_coordinate_arm(T_Cam2Robot_arm2, x, y, z)
             turn = 0
-
         click_points.append((x_base, y_base, z_base))
 
         # 一旦有两个点击点，启动两个机械臂的任务
