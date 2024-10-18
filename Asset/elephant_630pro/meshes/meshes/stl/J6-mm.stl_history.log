@@ -1,0 +1,3 @@
+Instantiated with filepath=None->None, scale=[1.0000001192092896, 1.000000238418579, 1.0000001192092896], mesh=<bpy_struct, Mesh("J6-mm") at 0x7effe809f308>, meshname=J6-mm, material=None, mesh_orientation=None, {}
+->trying export of <bpy_struct, Mesh("J6-mm") at 0x7effe809f308> to /home/robot/phobos-models/firefighter/meshes/stl/J6-mm.stl
+->wrote stl to /home/robot/phobos-models/firefighter/meshes/stl/J6-mm.stl from bpy_types.Mesh
